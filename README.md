@@ -57,7 +57,7 @@ func main() {
 
 Create a file called `template.html` in the project's root directory.
 This will be used to display each of the wiki pages.
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -74,7 +74,7 @@ This will be used to display each of the wiki pages.
 </html>
 ```
 
-# End
+# Wiki with Networking
 
 ```go
 package main
