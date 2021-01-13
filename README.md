@@ -10,7 +10,7 @@ https://golang.org/doc/articles/wiki/.
 
 * Go to https://repl.it/ and create a new Go project.
 * Add a folder called "pages"
-* Example: https://repl.it/@fractalbach/GolangWikiWorkshop
+* Example: https://repl.it/@fractalbach/wiki
 
 # Saving and Loading Wiki Pages
 
