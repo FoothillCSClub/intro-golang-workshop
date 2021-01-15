@@ -8,11 +8,56 @@ https://golang.org/doc/articles/wiki/.
 
 # New Project 
 
-* Go to https://repl.it/ and create a new Go project.
-* Add a folder called "pages"
-* Example: https://repl.it/@fractalbach/wiki
+For this tutorial, we are going to use https://repl.it/ instead of 
+installing Go on our machine, in order to simplify the workshop and
+make it easier to dive right in. If you want to install it on your
+machine, https://golang.org/doc/install has downloads and 
+instructions.
+
+1. If you haven't used repl.it before, you can make an account at
+   https://repl.it/signup. I highly reccomend making use of repl.it 
+   for stuff other than just this workshop!
+  
+2. Create a new Go project.
+  
+3. Add a folder within your project called "pages"
+
+
+While following this tutorial, it may be helpful to reference golang's
+package documenation, since we will be making use of the standard
+library. You can find the documentation at https://golang.org/pkg/.
+
+
+# Wiki Page
+
+Each wiki page will consist of two pieces of information: a Title and
+a Body. We can represent those in memory using a data structure. In
+Go, there are no object-oriented classes, instead there are only 
+data structures that you declare like so:
+
+```go
+type Page struct {
+    Title string,
+    Body string,
+}
+```
+
+This defines the structure of our Page, where both Title and Body are 
+strings. There is a shorthand syntax for when you have two fields
+of the same type. This is equivalent to the above:
+
+```go
+type Page struct {
+	Title, Body string
+}
+```
+
+
+
 
 # Saving and Loading Wiki Pages
+
+
 
 ```go
 package main
@@ -135,3 +180,6 @@ func main() {
 ```
 
 
+# Other Stuff
+
+Example project https://repl.it/@fractalbach/wiki
