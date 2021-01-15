@@ -30,6 +30,8 @@ library. You can find the documentation at https://golang.org/pkg/.
 
 # Wiki Page
 
+## The `Page` Data Structure
+
 Each wiki page will consist of two pieces of information: a Title and
 a Body. We can represent those in memory using a data structure. In
 Go, there are no object-oriented classes, instead there are only 
@@ -52,12 +54,118 @@ type Page struct {
 }
 ```
 
+## Saving a File
+
+Next we are going to start writing functions that save and load data
+with text files. First, we will need to import several packages from 
+the standard library.
+
+```go
+import (
+    "fmt"
+    "io/ioutil"
+    "path/filepath"
+)
+```
+
+And we are going to make use of that folder we named `pages` when we
+first created the project. We can save this into a global constant
+by using the `const` keyword.
+
+```go
+const folder = "pages"
+```
+
+Now it is time to write a function to save the Pages data structure 
+into a file. Here is what we will write:
 
 
+```go
+func (p *Page) saveToFile() {
+    path := filepath.Join(folder, p.Title + ".txt")
+    err := ioutil.WriteFile(path, []byte(p.Body), 0644)
+    if err != nil { fmt.Println(err) }
+}
+```
 
-# Saving and Loading Wiki Pages
+Breaking `saveToFile` down, here is what is happening:
+
+* In our function declaration, we write `func (p *Page) saveToFile()`, 
+  which shows that we are operating on a specific instance of the
+  `Page` data structure. This is essentially passed as input to the
+  function, which we can access with the variable name `p` from 
+  within the function. The function returns no values.
+ 
+* `path := filepath.Join(folder, p.Title + ".txt")` will combine the
+  paths together, so essentially it returns `pages/title.txt`.
+  The filepath package is often used to avoid problems that arise
+  with the way filepaths are treated on different operating systems.
+  
+* `err := ioutil.WriteFile(path, []byte(p.Body), 0644)`. This
+  is what actually creates and writes the file into the system. The
+  function takes as input a filepath and an array of bytes. In go,
+  we can easily convert a string to an array of bytes by using calling
+  `[]byte(string)`.  The `0644` is a magic number that is telling
+  the system what kind of read/write permissions the file should have.
+  Finally, the `ioutil.WriteFile` function returns an error as output,
+  which we will save (just in case).
+  
+* `if err != nil { fmt.Println(err) }`. Just in case there is an
+  error when we try to write a file, this will print out the error
+  so we can see what happened.
+
+## Loading a File
+
+Now we will write a function to load existing files by reading them
+and returning a newly created `Page` data structure. We essentially
+are doing the reverse of saving. We retrieve the bytes from the file,
+convert it into a string, and create a `Page` that uses that data as 
+its body.
+
+```go
+func loadPageFromFile(title string) *Page {
+    path := filepath.Join(folder, title + ".txt")
+    data, err := ioutil.ReadFile(path)
+    if err != nil { fmt.Println(err) }
+    page := &Page{
+        Title: title, 
+        Body: string(data),
+    }
+    return page
+}
+```
+
+* Notice that `data, err := ioutil.ReadFile(path)` returns two 
+  different outputs from the same function. This is a common occurence
+  in Go, especially when the second output is an error.
+  
+* Notice that when we create the new `Page` structure, we are actually
+  saving a pointer to it by writing `&Page`.
+  
+Finally we will write a main function to create a test page, save it,
+and then load it again.
+
+```go
+func main() {
+    p1 := Page{Title: "index", Body: "Welcome to CS Club Wiki!"}
+    p1.saveToFile()
+    p2 := loadPageFromFile("index")
+    fmt.Println(p2.Body)
+}
+```
+
+When running this, if all goes well, we expect to see this output from
+our console:
+```
+> go build
+> ./main
+Welcome to CS Club Wiki!
+```
 
 
+# Checkpoint 1
+
+Here is everything we have written so far.
 
 ```go
 package main
@@ -65,6 +173,7 @@ package main
 import (
     "fmt"
     "io/ioutil"
+    "path/filepath"
 )
 
 const folder = "pages"
@@ -73,32 +182,37 @@ type Page struct {
     Title, Body string
 }
 
-func (p *Page) saveToFile() error {
-    filename := folder + "/" + p.Title + ".txt"
-    return ioutil.WriteFile(filename, []byte(p.Body), 0600)
+func (p *Page) saveToFile() {
+    path := filepath.Join(folder, p.Title + ".txt")
+    err := ioutil.WriteFile(path, []byte(p.Body), 0644)
+    if err != nil { fmt.Println(err) }
 }
 
-func loadPageFromFile(title string) (*Page, error) {
-    filename := folder + "/" + title + ".txt"
-    data, err := ioutil.ReadFile(filename)
+func loadPageFromFile(title string) *Page {
+    path := filepath.Join(folder, title + ".txt")
+    data, err := ioutil.ReadFile(path)
+    if err != nil { fmt.Println(err) }
     page := &Page{
         Title: title, 
         Body: string(data),
     }
-    return page, err
+    return page
 }
 
 func main() {
     p1 := Page{Title: "index", Body: "Welcome to CS Club Wiki!"}
     p1.saveToFile()
-    p2, _ := loadPageFromFile("index")
+    p2 := loadPageFromFile("index")
     fmt.Println(p2.Body)
 }
 ```
 
 
 
-# HTML Template
+
+# Converting Data into a Web Page
+
+## HTML Template
 
 Create a file called `template.html` in the project's root directory.
 This will be used to display each of the wiki pages.
@@ -118,6 +232,9 @@ This will be used to display each of the wiki pages.
 </body>
 </html>
 ```
+
+
+
 
 # Wiki with Networking
 
