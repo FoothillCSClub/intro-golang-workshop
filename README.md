@@ -163,7 +163,7 @@ Welcome to CS Club Wiki!
 ```
 
 
-# Checkpoint 1
+# Checkpoint: Load/Save Page
 
 Here is everything we have written so far.
 
@@ -233,19 +233,87 @@ This will be used to display each of the wiki pages.
 </html>
 ```
 
+## Using the Template
 
+We are going to be another standard library package called `template`.
+So add it to your imports, like so...
+
+```go
+import (
+	// ... other imports ...
+    "html/template"
+)
+```
+
+And now we are going to save a global variable with the prepared 
+template.
+
+```go
+var pageTemplate = template.Must(template.ParseFiles("template.html"))
+```
+
+Later, we will be calling the function `pageTemplate.execute` to 
+generate the html using a `Page` data structure as input. The template
+system will convert the strings in our template that are called
+`{{.Title}}` and `{{.Body}}` and write in the corresponding data
+from `Page.Title` and `Page.Body`.
 
 
 # Wiki with Networking
+
+
+Here we add some more imports
+
+```go
+import (
+	// ... other imports ...
+    "log"
+    "net/http"
+)
+```
+
+And write what is called a `handler` to read and write from a network
+connection.
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+    log.Println(r.RemoteAddr, r.Method, r.URL)
+    path := r.URL.Path[1:]
+    if path == "" { path = "index" }
+    if r.Method == "POST" {
+        page := Page{
+            Title: path,
+            Body: r.FormValue("body"),
+        }
+        page.saveToFile()
+    }
+    page := loadPageFromFile(path)
+    pageTemplate.Execute(w, page)
+}
+```
+
+And finally we will write a main function that will start the server.
+
+```go
+func main() {
+    http.HandleFunc("/", handler)
+    log.Println("CS Club Wiki Server has started!")
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+# Checkpoint: Final 
 
 ```go
 package main
 
 import (
+    "fmt"
     "io/ioutil"
-    "net/http"
-    "log"
+    "path/filepath"
     "html/template"
+    "log"
+    "net/http"
 )
 
 const folder = "pages"
@@ -256,36 +324,35 @@ type Page struct {
     Title, Body string
 }
 
-func (p *Page) saveToFile() error {
-    filename := folder + "/" + p.Title + ".txt"
-    return ioutil.WriteFile(filename, []byte(p.Body), 0600)
+func (p *Page) saveToFile() {
+    path := filepath.Join(folder, p.Title + ".txt")
+    err := ioutil.WriteFile(path, []byte(p.Body), 0644)
+    if err != nil { fmt.Println(err) }
 }
 
-func loadPageFromFile(title string) (*Page, error) {
-    filename := folder + "/" + title + ".txt"
-    data, err := ioutil.ReadFile(filename)
+func loadPageFromFile(title string) *Page {
+    path := filepath.Join(folder, title + ".txt")
+    data, err := ioutil.ReadFile(path)
+    if err != nil { fmt.Println(err) }
     page := &Page{
         Title: title, 
         Body: string(data),
     }
-    return page, err
+    return page
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
     log.Println(r.RemoteAddr, r.Method, r.URL)
     path := r.URL.Path[1:]
-    if path == "" {
-        path = "index"
-    }
+    if path == "" { path = "index" }
     if r.Method == "POST" {
         page := Page{
             Title: path,
             Body: r.FormValue("body"),
         }
-        log.Println("PAGE EDITED:%s\n%s", page.Title, page.Body)
         page.saveToFile()
     }
-    page, _ := loadPageFromFile(path)
+    page := loadPageFromFile(path)
     pageTemplate.Execute(w, page)
 }
 
@@ -295,7 +362,6 @@ func main() {
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
-
 
 # Other Stuff
 
